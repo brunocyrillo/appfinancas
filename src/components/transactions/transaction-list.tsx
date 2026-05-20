@@ -20,7 +20,10 @@ interface TransactionListProps {
   showFilters?: boolean;
 }
 
-export function TransactionList({ transactions, showFilters = true }: TransactionListProps) {
+export function TransactionList({
+  transactions,
+  showFilters = true,
+}: TransactionListProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -61,7 +64,11 @@ export function TransactionList({ transactions, showFilters = true }: Transactio
           </Select>
 
           <div className="ml-auto">
-            <Button size="sm" onClick={() => setFormOpen(true)} className="gap-2">
+            <Button
+              size="sm"
+              onClick={() => setFormOpen(true)}
+              className="gap-2"
+            >
               <Plus className="h-4 w-4" />
               Nova transação
             </Button>
@@ -71,19 +78,24 @@ export function TransactionList({ transactions, showFilters = true }: Transactio
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Receipt className="h-10 w-10 text-slate-300 mb-3" />
-          <p className="text-slate-500 text-sm">Nenhuma transação encontrada</p>
-          <Button variant="outline" size="sm" className="mt-3 gap-2" onClick={() => setFormOpen(true)}>
+          <Receipt className="h-10 w-10 text-muted-foreground/30 mb-3" />
+          <p className="text-muted-foreground text-sm">Nenhuma transação encontrada</p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 gap-2"
+            onClick={() => setFormOpen(true)}
+          >
             <Plus className="h-4 w-4" />
             Adicionar transação
           </Button>
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div>
           {filtered.map((t, i) => (
             <div key={t.id}>
               <TransactionItem transaction={t} />
-              {i < filtered.length - 1 && <Separator className="mx-4" />}
+              {i < filtered.length - 1 && <Separator />}
             </div>
           ))}
         </div>

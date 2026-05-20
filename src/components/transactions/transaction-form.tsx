@@ -96,8 +96,8 @@ export function TransactionForm({ open, onClose, transaction }: TransactionFormP
               className={cn(
                 "py-2 rounded-md text-sm font-medium border transition-colors",
                 type === "expense"
-                  ? "bg-red-50 border-red-300 text-red-700"
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  ? "bg-red-50 dark:bg-red-950 border-red-300 text-red-700 dark:text-red-400"
+                  : "bg-background border-border text-muted-foreground hover:bg-accent"
               )}
             >
               Despesa
@@ -108,8 +108,8 @@ export function TransactionForm({ open, onClose, transaction }: TransactionFormP
               className={cn(
                 "py-2 rounded-md text-sm font-medium border transition-colors",
                 type === "income"
-                  ? "bg-green-50 border-green-300 text-green-700"
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  ? "bg-green-50 dark:bg-green-950 border-green-300 text-green-700 dark:text-green-400"
+                  : "bg-background border-border text-muted-foreground hover:bg-accent"
               )}
             >
               Receita

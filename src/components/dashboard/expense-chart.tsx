@@ -9,13 +9,19 @@ interface ExpenseChartProps {
   data: CategoryExpense[];
 }
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: CategoryExpense }> }) {
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: CategoryExpense }>;
+}) {
   if (active && payload && payload.length) {
     const item = payload[0].payload;
     return (
-      <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-md text-sm">
-        <p className="font-medium text-slate-900">{item.label}</p>
-        <p className="text-slate-600">{formatCurrency(item.amount)}</p>
+      <div className="bg-card border border-border rounded-lg p-3 shadow-md text-sm">
+        <p className="font-medium text-foreground">{item.label}</p>
+        <p className="text-muted-foreground">{formatCurrency(item.amount)}</p>
       </div>
     );
   }
@@ -27,10 +33,12 @@ export function ExpenseChart({ data }: ExpenseChartProps) {
     return (
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-slate-600">Despesas por categoria</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Despesas por categoria
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-48">
-          <p className="text-slate-400 text-sm">Nenhuma despesa no período</p>
+          <p className="text-muted-foreground/50 text-sm">Nenhuma despesa no período</p>
         </CardContent>
       </Card>
     );
@@ -39,7 +47,9 @@ export function ExpenseChart({ data }: ExpenseChartProps) {
   return (
     <Card className="border-0 shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-slate-600">Despesas por categoria</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          Despesas por categoria
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={240}>
@@ -55,12 +65,19 @@ export function ExpenseChart({ data }: ExpenseChartProps) {
               nameKey="label"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.color}
+                  stroke="transparent"
+                  strokeWidth={2}
+                />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
             <Legend
-              formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
+              formatter={(value) => (
+                <span className="text-xs text-muted-foreground">{value}</span>
+              )}
               iconType="circle"
               iconSize={8}
             />
