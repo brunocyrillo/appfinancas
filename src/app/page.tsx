@@ -1,132 +1,183 @@
-import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { getTransactions } from "@/app/actions/transactions";
-import { SummaryCards } from "@/components/dashboard/summary-cards";
-import { ExpenseChart } from "@/components/dashboard/expense-chart";
-import { MonthNavigator } from "@/components/dashboard/month-navigator";
-import { TransactionList } from "@/components/transactions/transaction-list";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Navbar } from "@/components/dashboard/navbar";
-import { getMonthRange } from "@/lib/utils";
-import { CATEGORIES, CATEGORY_COLORS, type CategoryExpense, type MonthlySummary, type Transaction } from "@/types";
 import Link from "next/link";
-import { ArrowRight, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { cn } from "@/lib/utils";
+import {
+  TrendingUp,
+  Shield,
+  PieChart,
+  BarChart3,
+  CheckCircle,
+  ArrowRight,
+} from "lucide-react";
 
-interface PageProps {
-  searchParams: Promise<{ month?: string; year?: string }>;
-}
-
-async function DashboardContent({ searchParams }: PageProps) {
+export default async function LandingPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const params = await searchParams;
-  const now = new Date();
-  const month = params.month !== undefined ? parseInt(params.month) : now.getMonth();
-  const year = params.year !== undefined ? parseInt(params.year) : now.getFullYear();
-  const currentDate = new Date(year, month, 1);
-
-  const { start, end } = getMonthRange(currentDate);
-  const { data: transactions } = await getTransactions({ startDate: start, endDate: end });
-  const txList: Transaction[] = transactions ?? [];
-
-  const summary: MonthlySummary = txList.reduce(
-    (acc, t) => {
-      if (t.type === "income") acc.totalIncome += t.amount;
-      else acc.totalExpense += t.amount;
-      return acc;
+  const features = [
+    {
+      icon: TrendingUp,
+      title: "Receitas e despesas",
+      description:
+        "Registre todas as suas movimentações com categorias e acompanhe o saldo em tempo real.",
+      color: "text-green-500",
+      bg: "bg-green-500/10",
     },
-    { totalIncome: 0, totalExpense: 0, balance: 0 }
-  );
-  summary.balance = summary.totalIncome - summary.totalExpense;
-
-  const expensesByCategory: CategoryExpense[] = CATEGORIES.filter((c) =>
-    c.type.includes("expense")
-  )
-    .map((cat) => ({
-      category: cat.value,
-      label: cat.label,
-      amount: txList
-        .filter((t) => t.type === "expense" && t.category === cat.value)
-        .reduce((sum, t) => sum + t.amount, 0),
-      color: CATEGORY_COLORS[cat.value],
-    }))
-    .filter((c) => c.amount > 0);
-
-  const recentTransactions = txList.slice(0, 5);
+    {
+      icon: PieChart,
+      title: "Gráficos visuais",
+      description:
+        "Veja como seu dinheiro está sendo gasto por categoria com gráficos claros e intuitivos.",
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
+    {
+      icon: BarChart3,
+      title: "Histórico mensal",
+      description:
+        "Analise seus gastos mês a mês e identifique padrões para melhorar suas finanças.",
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar user={user} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-            <p className="text-sm text-slate-500">Visão geral do seu mês financeiro</p>
-          </div>
-          <Suspense fallback={null}>
-            <MonthNavigator currentDate={currentDate} />
-          </Suspense>
-        </div>
-
-        <SummaryCards summary={summary} />
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-2">
-            <ExpenseChart data={expensesByCategory} />
-          </div>
-          <div className="lg:col-span-3">
-            <Card className="border-0 shadow-sm h-full">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-slate-600">Últimas transações</CardTitle>
-                <Button variant="ghost" size="sm" asChild className="gap-1 text-xs text-primary">
-                  <Link href="/transactions">
-                    Ver todas <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </Button>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <TransactionList transactions={recentTransactions} showFilters={false} />
-                {txList.length === 0 && (
-                  <div className="flex justify-center pt-2">
-                    <Button size="sm" asChild className="gap-2">
-                      <Link href="/transactions">
-                        <Plus className="h-4 w-4" />
-                        Adicionar primeira transação
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-export default function DashboardPage(props: PageProps) {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-slate-50">
-          <div className="h-16 bg-white border-b" />
-          <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-            <div className="h-8 bg-slate-200 rounded animate-pulse w-48" />
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-28 bg-slate-200 rounded-lg animate-pulse" />
-              ))}
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground text-sm font-bold">F</span>
             </div>
+            <span className="font-semibold text-foreground">FinançasPessoais</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {user ? (
+              <Button asChild size="sm">
+                <Link href="/dashboard">Ir para Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/login">Entrar</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/register">Criar conta</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
-      }
-    >
-      <DashboardContent {...props} />
-    </Suspense>
+      </header>
+
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20 text-center space-y-6">
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">
+          <CheckCircle className="h-3.5 w-3.5" />
+          Gratuito e sem limites
+        </div>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-tight">
+          Controle suas
+          <br />
+          <span className="text-primary">finanças pessoais</span>
+          <br />
+          de forma simples
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          Registre receitas e despesas, visualize gráficos e tenha o controle
+          total do seu dinheiro — tudo em um só lugar.
+        </p>
+        <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+          {user ? (
+            <Button size="lg" asChild className="gap-2">
+              <Link href="/dashboard">
+                Acessar Dashboard <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button size="lg" asChild className="gap-2">
+                <Link href="/register">
+                  Começar gratuitamente <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/login">Já tenho conta</Link>
+              </Button>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+        <h2 className="text-center text-2xl font-bold text-foreground mb-10">
+          Tudo que você precisa para organizar seu dinheiro
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {features.map(({ icon: Icon, title, description, color, bg }) => (
+            <div
+              key={title}
+              className="bg-card border border-border rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow"
+            >
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center",
+                  bg
+                )}
+              >
+                <Icon className={cn("h-5 w-5", color)} />
+              </div>
+              <h3 className="font-semibold text-foreground">{title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      {!user && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+          <div className="bg-primary rounded-2xl p-10 text-center space-y-4">
+            <div className="flex justify-center">
+              <Shield className="h-10 w-10 text-primary-foreground/80" />
+            </div>
+            <h2 className="text-2xl font-bold text-primary-foreground">
+              Comece hoje mesmo
+            </h2>
+            <p className="text-primary-foreground/80 max-w-md mx-auto">
+              Crie sua conta em segundos e comece a controlar suas finanças de
+              forma inteligente.
+            </p>
+            <Button size="lg" variant="secondary" asChild className="gap-2">
+              <Link href="/register">
+                Criar conta grátis <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="border-t border-border mt-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
+              <span className="text-primary-foreground text-xs font-bold">F</span>
+            </div>
+            <span>FinançasPessoais</span>
+          </div>
+          <p>Gerencie suas finanças com simplicidade.</p>
+        </div>
+      </footer>
+    </div>
   );
 }

@@ -33,12 +33,15 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/register");
 
-  if (!user && !isAuthPage) {
+  const isPublicPage =
+    request.nextUrl.pathname === "/" || isAuthPage;
+
+  if (!user && !isPublicPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if (user && isAuthPage) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return supabaseResponse;

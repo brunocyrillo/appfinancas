@@ -45,7 +45,7 @@ export async function createTransaction(formData: TransactionFormData) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/transactions");
   return { success: true };
 }
@@ -69,7 +69,7 @@ export async function updateTransaction(id: string, formData: TransactionFormDat
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/transactions");
   return { success: true };
 }
@@ -87,7 +87,7 @@ export async function deleteTransaction(id: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/transactions");
   return { success: true };
 }
