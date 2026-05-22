@@ -32,6 +32,25 @@ interface TransactionFormProps {
 
 const today = new Date().toISOString().split("T")[0];
 
+function parseBRAmount(str: string): number {
+  let s = str.trim();
+  if (s.includes(".") && s.includes(",")) {
+    // Formato BR: 1.500,00 → remove pontos, troca vírgula por ponto
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (s.includes(",")) {
+    // Só vírgula: 1500,00 → 1500.00
+    s = s.replace(",", ".");
+  } else if (s.includes(".")) {
+    // Só ponto: verifica se é separador de milhar (3 dígitos após o último ponto)
+    const afterDot = s.substring(s.lastIndexOf(".") + 1);
+    if (afterDot.length === 3) {
+      s = s.replace(/\./g, ""); // 10.000 → 10000
+    }
+    // Senão mantém como decimal: 10.50 → 10.50
+  }
+  return parseFloat(s);
+}
+
 export function TransactionForm({ open, onClose, transaction }: TransactionFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -49,9 +68,9 @@ export function TransactionForm({ open, onClose, transaction }: TransactionFormP
       toast({ variant: "destructive", title: "Selecione uma categoria" });
       return;
     }
-    const parsedAmount = parseFloat(amount.replace(",", "."));
+    const parsedAmount = parseBRAmount(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast({ variant: "destructive", title: "Valor inválido" });
+      toast({ variant: "destructive", title: "Valor inválido", description: 'Ex: 1.500,00 ou 1500,00' });
       return;
     }
 
@@ -120,10 +139,9 @@ export function TransactionForm({ open, onClose, transaction }: TransactionFormP
             <Label htmlFor="amount">Valor (R$)</Label>
             <Input
               id="amount"
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder="0,00"
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00  ex: 1.500,00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
