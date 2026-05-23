@@ -9,6 +9,7 @@ import { TransactionList } from "@/components/transactions/transaction-list";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/dashboard/navbar";
+import { AddTransactionButton } from "@/components/dashboard/add-transaction-button";
 import { getMonthRange } from "@/lib/utils";
 import {
   CATEGORIES,
@@ -75,16 +76,19 @@ async function DashboardContent({ searchParams }: PageProps) {
     <div className="min-h-screen bg-muted/30">
       <Navbar user={user} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Visão geral do seu mês financeiro
             </p>
           </div>
-          <Suspense fallback={null}>
-            <MonthNavigator currentDate={currentDate} />
-          </Suspense>
+          <div className="flex items-center gap-3">
+            <AddTransactionButton />
+            <Suspense fallback={null}>
+              <MonthNavigator currentDate={currentDate} />
+            </Suspense>
+          </div>
         </div>
 
         <SummaryCards summary={summary} />
